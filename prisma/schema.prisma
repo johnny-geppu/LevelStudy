@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DIRECT_URL")
+}
+
+//Userモデルを作成
+model User {
+  name     String
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  skills   Skill[]
+}
+
+//Skillモデルを作成
+model Skill {
+  id        String        @id @default(cuid())
+  title     String
+  xp        Int           @default(0)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record    StudyRecord[]
+  createdAt DateTime      @default(now())
+}
+
+//StudyRecordモデルを作成
+model StudyRecord {
+  id        String   @id @default(cuid())
+  content   String
+  minutes   Int
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
