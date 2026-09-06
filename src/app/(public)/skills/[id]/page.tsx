@@ -31,7 +31,7 @@ export default async function SkillPage({ params }: PageProps) {
                         XP: {skill.xp}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        {skill.name}分
+                        {skill.user.name}
                     </p>
                 </CardContent>
             </Card>
