@@ -9,8 +9,11 @@ export async function authenticate(
     formData: FormData
 ): Promise<string | undefined> {
     try {
-        await signIn("credentials", formData);
-
+        await signIn("credentials", {
+            ...Object.fromEntries(formData),
+            redirectTo: "/dashboard",
+        });
+//認証成功->undefinedを返す(redirect)
         return undefined;
     } catch (error) {
         if (error instanceof AuthError) {
@@ -22,7 +25,7 @@ export async function authenticate(
                     return "ログインに失敗しました。";
             }
         }
-
+//認証失敗->エラーを返し、アクションステイトのstateに格納される
         throw error;
     }
 }
