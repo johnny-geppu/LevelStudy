@@ -46,3 +46,27 @@ export const { auth, signIn, signOut } = NextAuth({
         }),
     ],
 })
+
+
+
+// export const { auth, signIn, signOut } = NextAuth({
+//     ...authConfig,
+
+//     callbacks: {
+//         ...authConfig.callbacks,
+
+//         async session({ session, token }) {
+//             if (session.user && token.sub) {
+//                 session.user.id = token.sub;
+//             }
+
+//             return session;
+//         },
+//     },
+
+//     providers: [
+//         Credentials({
+//             // 今までのauthorize処理
+//         }),
+//     ],
+// });
