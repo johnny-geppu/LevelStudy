@@ -1,23 +1,14 @@
-//SkillをDBから取得(スキル一覧)
-import { prisma } from "@/lib/prisma"
-
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/session";
 export async function getSkills() {
-    return await prisma.skill.findMany({
-        orderBy: {
-            createdAt: "desc"
-        }
-    })
+  const user = await requireUser();
+  const skills = await prisma.skill.findMany({ where: { userId: user.id }, include: { record: true }, orderBy: { createdAt: "desc" } });
+  return skills.map(s => ({ ...s, xp: s.record.reduce((sum, r) => sum + r.minutes, 0) }));
 }
-
-//SkillをDBから取得(スキル詳細)
 export async function getSkill(id: string) {
-    return await prisma.skill.findUnique({
-        where: {
-            id
-        },
-        include: {
-            record: true,
-            user:true
-        }
-    })
+  const user = await requireUser();
+  const s = await prisma.skill.findFirst({ where: { id, userId: user.id }, include: { record: true } });
+  if (!s) return null;
+  s.record.sort((a,b) => (b.studiedAt ?? b.createdAt).getTime() - (a.studiedAt ?? a.createdAt).getTime());
+  return { ...s, xp: s.record.reduce((sum,r) => sum + r.minutes,0) };
 }

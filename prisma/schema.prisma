@@ -32,6 +32,8 @@ model Skill {
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   record    StudyRecord[]
   createdAt DateTime      @default(now())
+  archivedAt DateTime?
+  @@index([userId])
 }
 
 //StudyRecordモデルを作成
@@ -42,4 +44,6 @@ model StudyRecord {
   skillId   String
   skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  studiedAt DateTime?
+  @@index([skillId, studiedAt])
 }

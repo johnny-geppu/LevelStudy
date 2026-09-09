@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 
 export default function LoginForm() {
-    const [state, formAction] = useActionState(
+    const [state, formAction, pending] = useActionState(
         authenticate,
         undefined
     );
@@ -81,10 +81,11 @@ export default function LoginForm() {
                     )}
 
                     <button
+                        disabled={pending}
                         type="submit"
                         className="w-full rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-lg active:translate-y-0"
                     >
-                        ログイン
+                        {pending ? "ログイン中…" : "ログイン"}
                     </button>
                 </form>
 

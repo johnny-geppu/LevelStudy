@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Level Study
 
-## Getting Started
+学習分野をスキルとして登録し、学習時間をXPに変えるWebアプリです。
+Next.js App Router / Auth.js Credentials / Prisma / PostgreSQL。
 
-First, run the development server:
+## 起動
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Node.js 20.9以上とPostgreSQLが必要です。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. `npm ci`
+2. `.env` に `DIRECT_URL`（PostgreSQL接続URL）と `AUTH_SECRET`（十分に長いランダム値）を設定。必要に応じて `AUTH_URL=http://localhost:3000` を指定。
+3. `npm run db:generate`
+4. `npm run db:migrate`
+5. `npm run dev` → http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+新規登録から自分のアカウントを作成できます。既存のDBを使うときは同じAUTH_SECRETを維持してください。
+本番では `npm run build` → `npm start`。DBマイグレーションはデプロイ時にも適用します。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 機能
 
-## Learn More
+- ユーザー登録・ログイン・ログアウト
+- スキルの追加・名前変更・アーカイブ・復元
+- 学習記録の追加・編集・確認付き削除
+- スキルごとのXP、レベル、次のレベルまでの進捗
+- 今日の学習時間、累計XP、連続日数、学習日数
+- 7日間グラフ、最近の履歴、スキルごとの全履歴
+- 記録に応じた4種類の実績表示
+- モバイル対応、保存中表示、入力検証、エラー・空状態
 
-To learn more about Next.js, take a look at the following resources:
+## データのルール
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 学習記録は本人だけが閲覧・変更できます。すべてのServer Actionと取得処理でセッションを確認します。
+- 1分 = 1XP。表示XPはStudyRecord.minutesの合計。既存のSkill.xpは互換性のため残しますが、読み書きには使いません。
+- レベルnの開始XPは `50 * n * (n - 1)`。Lv.1=0、Lv.2=100、Lv.3=300。
+- createdAtは登録日時、studiedAtは学習日（日本時間の0時）。既存記録はマイグレーションでcreatedAtをコピーします。
+- 学習日とストリークは日本時間で集計。今日は未記録でも昨日まで連続していれば継続扱いです。
+- 1記録は1〜1440分、内容は1〜1000文字、日付は2000年以降の今日以前。
+- アーカイブはスキルを一覧から隠します。履歴・累計・実績への算入は維持します。
+- 実績は現在の履歴・ストリークから計算する表示です。永続的な獲得履歴ではなく、記録の削除やストリークの中断に連動します。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 検証
 
-## Deploy on Vercel
+- `npm test`：日本時間境界、不正日付、レベル境界、ストリーク、過去日の集計
+- `npm run lint`
+- `npx tsc --noEmit`
+- `npm run build`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ブラウザー確認：ログイン → スキル追加 → 記録追加 → XP・日別集計 → 記録編集 → アーカイブ・復元 → ログアウト。
+別ユーザーのスキルURLは404になり、未ログインではログイン画面に移動します。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+注意：既存の `prisma/seed.ts` は全データを削除してサンプルを作る開発専用スクリプトです。通常のセットアップでは実行しません。

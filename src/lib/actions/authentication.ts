@@ -3,7 +3,7 @@
 
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth";
-
+import { redirect } from "next/navigation";
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData
@@ -11,8 +11,9 @@ export async function authenticate(
     try {
         await signIn("credentials", {
             ...Object.fromEntries(formData),
-            redirectTo: "/dashboard",
+            redirect: false
         });
+        redirect("/dashboard");
 //認証成功->undefinedを返す(redirect)
         return undefined;
     } catch (error) {

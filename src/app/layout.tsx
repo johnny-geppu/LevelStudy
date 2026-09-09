@@ -1,10 +1,6 @@
 import "./globals.css";
-import { Geist } from "next/font/google";
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Level Study — 毎日の学びを、冒険に。", description: "学習を記録してXPをため、スキルを育てる学習アプリ。" };
 
 export default function RootLayout({
   children,
@@ -13,7 +9,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={geist.variable}>
+      <body>
         {children}
       </body>
     </html>

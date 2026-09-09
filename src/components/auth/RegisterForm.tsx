@@ -3,12 +3,14 @@
 import { registerUser } from "@/lib/actions/registerUser";
 import Link from "next/link";
 import { useActionState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterForm() {
-    const [state, formAction] = useActionState(
-    registerUser,
-    undefined
-);
+    const [state, formAction, pending] = useActionState(registerUser, {
+        success: false,
+        errors: {},
+    });
+
     return (
         <div className="relative w-full max-w-md">
 
@@ -53,6 +55,12 @@ export default function RegisterForm() {
                             required
                             className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-4 focus:ring-zinc-900/5"
                         />
+
+                        {state.errors.name && (
+                            <p className="text-sm text-red-500">
+                                {state.errors.name.join(",")}
+                            </p>
+                        )}
                     </div>
 
                     {/* メールアドレス */}
@@ -72,6 +80,12 @@ export default function RegisterForm() {
                             required
                             className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-4 focus:ring-zinc-900/5"
                         />
+
+                        {state.errors.email && (
+                            <p className="text-sm text-red-500">
+                                {state.errors.email.join(",")}
+                            </p>
+                        )}
                     </div>
 
                     {/* パスワード */}
@@ -91,15 +105,48 @@ export default function RegisterForm() {
                             required
                             className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-4 focus:ring-zinc-900/5"
                         />
+
+                        {state.errors.password && (
+                            <p className="text-sm text-red-500">
+                                {state.errors.password.join(",")}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* パスワード確認 */}
+                    <div className="space-y-2">
+                        <label
+                            htmlFor="confirmPassword"
+                            className="text-sm font-medium"
+                        >
+                            パスワード（確認）
+                        </label>
+
+                        <input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            placeholder="もう一度入力"
+                            required
+                            className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-4 focus:ring-zinc-900/5"
+                        />
+
+                        {state.errors.confirmPassword && (
+                            <p className="text-sm text-red-500">
+                                {state.errors.confirmPassword.join(",")}
+                            </p>
+                        )}
                     </div>
 
                     {/* 登録ボタン */}
-                    <button
+                    {state.errors.form && <p role="alert" className="text-sm text-red-600">{state.errors.form.join(" ")}</p>}
+                    <Button
+                        disabled={pending}
                         type="submit"
-                        className="w-full rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 hover:shadow-lg active:translate-y-0"
+                        className="w-full"
                     >
-                        アカウントを作成
-                    </button>
+                        {pending ? "作成中…" : "アカウントを作成"}
+                    </Button>
                 </form>
 
                 {/* 区切り */}

@@ -1,60 +1,12 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSkill } from "@/lib/skill";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-
-type PageProps = {
-    params: Promise<{ id: string }>;
-};
-
-export default async function SkillPage({ params }: PageProps) {
-    const { id } = await params;
-    const skill = await getSkill(id);
-
-    if (!skill) {
-        notFound();
-    }
-
-    return (
-        <main className="mx-auto max-w-3xl p-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>{skill.title}</CardTitle>
-                </CardHeader>
-
-                <CardContent>
-                    <p className="text-lg font-semibold">
-                        XP: {skill.xp}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        {skill.user.name}
-                    </p>
-                </CardContent>
-            </Card>
-
-            <h2 className="mt-8 mb-4 text-2xl font-bold">
-                Study Records
-            </h2>
-
-            <div className="space-y-3">
-                {skill.record.map((record) => (
-                    <Card key={record.id}>
-                        <CardContent className="pt-6">
-                            <p className="font-medium">
-                                {record.content}
-                            </p>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {record.minutes}分
-                            </p>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-        </main>
-    );
+import { dayKey } from "@/lib/progress";
+import { Progress } from "@/components/Progress";
+import { StudyForm, RecordFields } from "@/components/StudyForm";
+export default async function SkillPage({ params }: { params: Promise<{ id: string }> }) {
+ const skill = await getSkill((await params).id);
+ if (!skill) notFound();
+ const today = dayKey();
+ return <main className="app-main"><Link href="/dashboard" className="text-sm text-teal-700">← 冒険のホームへ</Link><div className="my-7"><p className="eyebrow">SKILL JOURNEY {skill.archivedAt ? "· ARCHIVED" : ""}</p><h1 className="page-title break-words">{skill.title}</h1></div><div className="dashboard-grid"><div className="space-y-6"><section className="panel"><Progress xp={skill.xp} /><p className="mt-4 text-sm text-slate-500">{skill.record.length}回の学習 · 合計{skill.xp}分</p></section><section><h2 className="mb-4 text-xl font-bold">学習履歴</h2>{!skill.record.length && <div className="panel text-slate-500">まだ記録がありません。最初の学びを残しましょう。</div>}<div className="space-y-4">{skill.record.map(r => <article key={r.id} className="panel"><div className="flex justify-between gap-3 text-sm"><span className="text-slate-500">{dayKey(r.studiedAt ?? r.createdAt)}</span><span className="font-semibold text-teal-700">{r.minutes}分 · ＋{r.minutes} XP</span></div><p className="my-4 whitespace-pre-wrap break-words">{r.content}</p><details><summary className="cursor-pointer text-xs text-slate-500">記録を編集・削除</summary><div className="mt-4 space-y-4">{!skill.archivedAt && <StudyForm operation="editRecord" skillId={skill.id} recordId={r.id} label="変更を保存"><RecordFields today={today} record={{ ...r, date: dayKey(r.studiedAt ?? r.createdAt) }} /></StudyForm>}<StudyForm operation="deleteRecord" skillId={skill.id} recordId={r.id} label="この記録を削除" confirm="この学習記録を削除しますか？XPと実績も再計算されます。この操作は取り消せません。" /></div></details></article>)}</div></section></div><aside className="space-y-6"><section className="panel"><h2 className="mb-5 text-xl font-bold">学習を記録</h2>{skill.archivedAt ? <p className="text-sm text-slate-500">アーカイブ済みです。復元すると学習を再開できます。</p> : <StudyForm operation="createRecord" skillId={skill.id} label="記録してXPを獲得" reset><RecordFields today={today} /></StudyForm>}</section><details className="panel"><summary className="cursor-pointer font-semibold">スキルの設定</summary><div className="mt-5 space-y-6"><StudyForm operation="rename" skillId={skill.id} label="名前を変更"><label>スキル名<input name="title" defaultValue={skill.title} maxLength={60} required /></label></StudyForm><p className="text-sm text-slate-500">アーカイブしても学習履歴と累計XPは残ります。</p><StudyForm operation={skill.archivedAt ? "restore" : "archive"} skillId={skill.id} label={skill.archivedAt ? "スキルを復元" : "アーカイブする"} /></div></details></aside></div></main>;
 }
